@@ -1,0 +1,154 @@
+:root {
+    --primary-color: #ff1801; /* F1 Red */
+    --secondary-color: #ffffff; /* White */
+    --background-color: #1a1a1a; /* Dark */
+    --text-color: #ffffff; /* White */
+    --control-bg-color: #2a2a2a; /* Lighter Dark */
+    --button-bg-color: #ff1801; /* F1 Red */
+    --button-hover-color: #e01601; /* Darker F1 Red */
+    --input-color: #fff; /* White */
+    --input-bg-color: #333; /* Lighter Dark */
+  }
+  
+  body {
+    margin: 0;
+    font-family: 'Helvetica Neue', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+
+  .fps {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      color: #fff;
+      font-size: 1em;
+      font-weight: bold;
+      padding: 0.5em;
+      background: rgba(0, 0, 0, 0.5);
+  }
+  
+  .controls, .driver-details {
+    padding: 20px;
+    background: var(--control-bg-color);
+    margin: 20px auto;
+    max-width: 800px;
+    border-radius: 8px;
+  }
+  
+  .controls label, .controls select, .controls input, .controls button {
+    display: block;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+  
+  .controls input, .controls select {
+    padding: 10px;
+    background-color: var(--input-bg-color);
+    color: var(--input-color);
+    border: none;
+    border-radius: 4px;
+  }
+  
+  .controls button {
+    background-color: var(--button-bg-color);
+    color: var(--secondary-color);
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .controls button:hover {
+    background-color: var(--button-hover-color);
+  }
+  
+  .driver-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1); /* semi-transparent white */
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+  }
+  
+  .driver-card {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .driver-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .driver-info .driver-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary-color);
+  }
+  
+  .driver-info .driver-team {
+    font-size: 18px;
+    font-weight: 500;
+    margin-top: 5px;
+    color: var(--secondary-color);
+  }
+  
+  .telemetry-data {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .telemetry-data > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: var(--control-bg-color);
+    border-radius: 8px;
+  }
+  
+  .telemetry-bar {
+    flex-grow: 1;
+    height: 20px;
+    margin-left: 10px;
+    border-radius: 8px;
+    background: var(--secondary-color);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .telemetry-bar::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: var(--primary-color);
+    width: var(--value, 0%);
+    transition: width 0.3s ease-in-out;
+  }
+  
+  .driver-card:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  @media (max-width: 768px) {
+    .driver-card {
+      grid-template-columns: 1fr;
+    }
+  }
+  
