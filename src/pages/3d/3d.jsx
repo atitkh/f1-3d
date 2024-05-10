@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, Component } from 'react'
+import React, { Component } from 'react'
 import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
 import { Inspector } from "@babylonjs/inspector";
@@ -55,7 +55,7 @@ class MainScene extends Component {
 
         this.engine.runRenderLoop(() => {
             let divFps = document.getElementsByClassName("fps")[0];
-            divFps.innerHTML = this.engine.getFps().toFixed() + " fps";
+            divFps.innerHTML = "FPS: " + this.engine.getFps().toFixed();
 
             if (this.scene) {
                 this.scene.render();
@@ -141,7 +141,7 @@ class MainScene extends Component {
         scene.gravity = new BABYLON.Vector3(0, gravity / framesPerSecond, 0);
         scene.collisionsEnabled = true;
 
-        Inspector.Show(this.scene, { embedMode: false });
+        // Inspector.Show(this.scene, { embedMode: false });
 
         return scene;
     }

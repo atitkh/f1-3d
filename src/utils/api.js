@@ -1,24 +1,28 @@
+import { location_data, car_data } from './constants.js';
+
 function scaleCoordinates(x, y, scale_factor) {
   return [x / scale_factor, y / scale_factor];
 }
 
 // Function to fetch and store location and car data for each driver
-export async function fetchLocationData(sessionKey, driverDataStore, driver, startTime, endTime, scaleFactor = 50) {
+export async function fetchLocationData(sessionKey, driverDataStore, driver, startTime, endTime, scaleFactor = 100) {
   let driverId = driver.driver_number;
   const fetchStartTime = performance.now();
+  
+  const carData = car_data;
+  const locationData = location_data;
 
-  const locationUrl = `https://api.openf1.org/v1/location?session_key=${sessionKey}&driver_number=${driverId}&date>=${startTime}&date<${endTime}`;
-  const Driverurl = `https://api.openf1.org/v1/drivers?driver_number=${driverId}&session_key=${sessionKey}`;
-  const carDataUrl = `https://api.openf1.org/v1/car_data?session_key=${sessionKey}&driver_number=${driverId}&date>=${startTime}&date<${endTime}`;
+  // const locationUrl = `https://api.openf1.org/v1/location?session_key=${sessionKey}&driver_number=${driverId}&date>=${startTime}&date<${endTime}`;
+  // const Driverurl = `https://api.openf1.org/v1/drivers?driver_number=${driverId}&session_key=${sessionKey}`;
+  // const carDataUrl = `https://api.openf1.org/v1/car_data?session_key=${sessionKey}&driver_number=${driverId}&date>=${startTime}&date<${endTime}`;
 
-  const [locationResponse, driverResponse, carDataResponse] = await Promise.all([
-    fetch(locationUrl),
-    fetch(Driverurl),
-    fetch(carDataUrl)
-  ]);
+  // const [locationResponse, carDataResponse] = await Promise.all([
+  //   fetch(locationUrl),
+  //   fetch(carDataUrl)
+  // ]);
 
-  const locationData = await locationResponse.json();
-  const carData = await carDataResponse.json();
+  // const locationData = await locationResponse.json(); 
+  // const carData = await carDataResponse.json();
 
   const fetchEndTime = performance.now();
   console.log(`Time taken to fetch data: ${(fetchEndTime - fetchStartTime).toFixed(2)} milliseconds`);
@@ -50,7 +54,10 @@ export async function fetchLocationData(sessionKey, driverDataStore, driver, sta
 
     return {
       x: scaledX,
-      y: scaledY,
+      z: scaledY,
+      y: 0,
+      date: location.date,
+      time: new Date(location.date).getTime(),
       carData: closestCarData,
     };
   });
