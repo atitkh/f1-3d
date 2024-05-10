@@ -112,18 +112,18 @@ class MainScene extends Component {
         scene.environmentTexture = hdrTexture;
 
         // sky
-        var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
-        var skyboxMaterial = new BABYLON.PBRMaterial("skyBox", scene);
-        skyboxMaterial.backFaceCulling = false;
-        skyboxMaterial.reflectionTexture = hdrTexture.clone();
-        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-        skyboxMaterial.microSurface = 1.0;
-        skyboxMaterial.disableLighting = true;
-        skyboxMaterial.twoSidedLighting = true;
-        skyboxMaterial._environmentBRDFTexture = hdrTexture.clone();
-        skyboxMaterial._environmentBRDFTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-        skyboxMaterial._environmentBRDFTexture.gammaSpace = false;
-        skybox.material = skyboxMaterial;
+        // var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
+        // var skyboxMaterial = new BABYLON.PBRMaterial("skyBox", scene);
+        // skyboxMaterial.backFaceCulling = false;
+        // skyboxMaterial.reflectionTexture = hdrTexture.clone();
+        // skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        // skyboxMaterial.microSurface = 1.0;
+        // skyboxMaterial.disableLighting = true;
+        // skyboxMaterial.twoSidedLighting = true;
+        // skyboxMaterial._environmentBRDFTexture = hdrTexture.clone();
+        // skyboxMaterial._environmentBRDFTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        // skyboxMaterial._environmentBRDFTexture.gammaSpace = false;
+        // skybox.material = skyboxMaterial;
 
         // freely movable camera
         this.mainCamera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 100, 0), scene);

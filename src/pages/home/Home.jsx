@@ -40,6 +40,7 @@ function Home() {
                 for (let driver of drivers) {
                     await fetchDriverData(driver);
                 }
+                await createTrackMap();
                 await loadCars();
                 animate(); // start animation
 
@@ -78,6 +79,30 @@ function Home() {
         return data;
     }
 
+    // create track map from image
+    async function createTrackMap() {
+        const trackMapImage = new Image();
+        trackMapImage.src = "assets/miami.png";
+        trackMapImage.onload = function () {
+            const imageWidth = trackMapImage.width;
+            const imageHeight = trackMapImage.height;
+            const aspectRatio = imageWidth / imageHeight;
+            const trackMapWidth = 160;
+            const trackMapHeight = trackMapWidth / aspectRatio;
+
+            const trackMap = new BABYLON.MeshBuilder.CreatePlane("trackMap", { width: trackMapWidth, height: trackMapHeight }, scene.current);
+            const trackMapMaterial = new BABYLON.StandardMaterial("trackMapMaterial", scene.current);
+            trackMapMaterial.diffuseTexture = new BABYLON.Texture(trackMapImage.src, scene.current);
+
+            trackMapMaterial.diffuseTexture.hasAlpha = true;
+            trackMapMaterial.backFaceCulling = false;
+            trackMap.material = trackMapMaterial;
+            trackMap.position = new BABYLON.Vector3(30.38, 0.10, -15.20);
+            trackMap.rotation = new BABYLON.Vector3(Math.PI / 2, 0, 0);
+            trackMap.scaling = new BABYLON.Vector3(1.080, 1.138, 1.2);
+        };
+    }
+
     async function loadCars() {
         // load cars
         const loader = new BABYLON.AssetsManager(scene.current);
@@ -87,9 +112,9 @@ function Home() {
             driver.onSuccess = (task) => {
                 const model = task.loadedMeshes[0];
                 model.name = `driver-${driverId}`;
-                model.scaling = new BABYLON.Vector3(1, 1, 1);
+                model.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
                 // model.position = new BABYLON.Vector3(driverData.current[driverId].timingData[0].x, 0, driverData.current[driverId].timingData[0].y);
-                model.position = new BABYLON.Vector3(0.1, 0.1, 0.1);
+                model.position = new BABYLON.Vector3(0.1, 0.2, 0.1);
                 driverData.current[driverId].model = model;
             };
             // driver.onError = (task, message, exception) => {
@@ -99,44 +124,21 @@ function Home() {
         loader.load();
     }
 
-    // function animate(currentTime) {
-    //     requestAnimationFrame(animate);
-
-    //     // Calculate elapsed time since last frame
-    //     const deltaTime = currentTime - lastAnimationFrameTime;
-    //     // Only proceed with animation if the delay has passed
-    //     if (deltaTime > animationDelay) {
-    //         Object.values(driverData.current).forEach(driver => {
-    //             if (driver.timingData.length && driver.model) {
-    //                 const newPosition = driver.timingData.shift();
-    //                 const oldPosition = driver.model.position;
-
-    //                 // Calculate the angle in radians between the old and new position
-    //                 const angle = Math.atan2(newPosition.x - oldPosition.x, newPosition.y - oldPosition.z);
-
-    //                 // Set the global rotation using quaternions
-    //                 driver.model.rotationQuaternion = BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 1, 0), angle);
-
-    //                 // Move the model to the new position
-    //                 driver.model.position = new BABYLON.Vector3(newPosition.x, 0, newPosition.y);
-
-    //                 setCurrentTimeData(prev => ({
-    //                     ...prev,
-    //                     [driver.driver.driver_number]: newPosition.carData
-    //                 }));
-    //             }
-    //         });
-
-    //         // Update the last animation frame time
-    //         lastAnimationFrameTime = currentTime;
-    //     }
-    // }
+    function easeInOutSine(x) {
+        return -(Math.cos(Math.PI * x) - 1) / 2;
+    }
 
     function interpolatePosition(oldPosition, newPosition, t) {
+        // t = easeInOutSine(t);  // Applying an ease-out function to smooth the ending
         const interpolatedX = BABYLON.Scalar.Lerp(oldPosition.x, newPosition.x, t);
         const interpolatedY = BABYLON.Scalar.Lerp(oldPosition.y, newPosition.y, t);
         const interpolatedZ = BABYLON.Scalar.Lerp(oldPosition.z, newPosition.z, t);
         return new BABYLON.Vector3(interpolatedX, interpolatedY, interpolatedZ);
+
+        // const interpolatedX = oldPosition.x + (newPosition.x - oldPosition.x) * t;
+        // const interpolatedY = oldPosition.y + (newPosition.y - oldPosition.y) * t;
+        // const interpolatedZ = oldPosition.z + (newPosition.z - oldPosition.z) * t;
+        // return new BABYLON.Vector3(interpolatedX, interpolatedY, interpolatedZ);
     }
 
     function animate() {
@@ -148,6 +150,10 @@ function Home() {
 
         Object.values(driverData.current).forEach(driver => {
             if (driver.timingData.length > 1 && driver.model) {
+                if (!driver.lastTransitionTime) {
+                    driver.lastTransitionTime = raceSimulationTime; // Initialize last transition time
+                }
+
                 const currentData = driver.timingData[0];
                 const nextData = driver.timingData[1];
 
@@ -155,25 +161,26 @@ function Home() {
                 const nextDataTime = nextData.time;
                 setRaceDataTime(currentDataTime);
 
-                const timeSinceCurrentData = raceSimulationTime - currentDataTime;
-                const timeDiff = nextDataTime - currentDataTime;
-                const t = Math.min(1, Math.max(0, timeSinceCurrentData / timeDiff));
+                // Adjust the rate of transition based on how far behind or ahead the simulation time is
+                const timeDiffAdjustmentFactor = calculateTimeDiffAdjustment(raceSimulationTime, nextDataTime);
+                // const timeDiffAdjustmentFactor = 1.0;
+                const adjustedTotalTransitionTime = (nextDataTime - currentDataTime) / timeDiffAdjustmentFactor;
+                const timeSinceLastTransition = raceSimulationTime - driver.lastTransitionTime;
+                let t = Math.min(1, Math.max(0, timeSinceLastTransition / adjustedTotalTransitionTime));
 
-                // console.log(`Time Since Current Data for driver ${driver.driver.driver_number}:`, currentDataTime, timeSinceCurrentData);
-                // console.log(`Time Diff for driver ${driver.driver.driver_number}:`, timeDiff);
-                // console.log(`Interpolation value (t) for driver ${driver.driver.driver_number}:`, t);
-
-                if (t < 1 && t >= 0) {
-                    setIsSyncingTime(false);
-                    const interpolatedPosition = interpolatePosition(new BABYLON.Vector3(currentData.x, currentData.y, currentData.z),
+                if (t < 1) {
+                    const interpolatedPosition = interpolatePosition(
+                        new BABYLON.Vector3(currentData.x, currentData.y, currentData.z),
                         new BABYLON.Vector3(nextData.x, nextData.y, nextData.z), t);
                     driver.model.position = interpolatedPosition;
 
                     const angle = Math.atan2(nextData.x - currentData.x, nextData.z - currentData.z);
                     driver.model.rotationQuaternion = BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 1, 0), angle);
-                } else if (t >= 1) {
-                    if (!isSyncingTime) setIsSyncingTime(true);
+                }
+
+                if (t >= 1) {
                     driver.timingData.shift(); // Shift to next dataset when t >= 1
+                    driver.lastTransitionTime = raceSimulationTime; // Reset the transition time
                 }
 
                 setCurrentTimeData(prev => ({
@@ -182,6 +189,17 @@ function Home() {
                 }));
             }
         });
+    }
+
+    function calculateTimeDiffAdjustment(simulationTime, nextDataTime) {
+        const delta = simulationTime - nextDataTime;
+        if (Math.abs(delta) <= 5000) {
+            return 1.0; // Ignore difference within 5 seconds
+        } else if (delta > 0) {
+            return 1.0 + delta / 5000; // Accelerate transition if behind
+        } else {
+            return 1.0 + delta / 10000; // Decelerate if ahead (less aggressive)
+        }
     }
 
     function getSpeed(driver) {
